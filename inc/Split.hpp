@@ -58,7 +58,7 @@ namespace detail
     template <template <unsigned...> class H, unsigned...Indexs>
     struct CallSplitFromHolder<H<Indexs...>>
     {
-        using type = typename SplitterClass<0, sizeof...(Indexs),
+        using type = typename SplitterClass<1, sizeof...(Indexs),
                                             H<>, H<>, Indexs...>::type;
     };
 }
@@ -68,6 +68,9 @@ struct Holder
 {
     template <unsigned I>
     using push_back = Holder<Indexs..., I>;
+
+    template <unsigned I>
+    using push_front = Holder<I, Indexs...>;
 
     //pop_front
 
@@ -79,7 +82,7 @@ struct Holder
 };
 
 template <unsigned... Indexs>
-using split = typename detail::SplitterClass<0, sizeof...(Indexs),
+using split = typename detail::SplitterClass<1, sizeof...(Indexs),
                                              Holder<>, Holder<>, Indexs...>::type;
 
 template <class H>

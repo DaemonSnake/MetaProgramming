@@ -24,8 +24,11 @@
 
 namespace MPL
 {
-    template	<class ToRem, template<class...> class TypeHolder, class ...Args>
-    class		RemoveTypeFromList
+    template <class, class>
+    class RemoveTypeFromList;
+    
+    template <class ToRem, template<class...> class TypeHolder, class ...Args>
+    class RemoveTypeFromList<ToRem, TypeHolder<Args...>>
     {
         template	<class, class>
         struct	AddToBack;
@@ -64,12 +67,6 @@ namespace MPL
         using type = typename Tool<TypeHolder<>, Args...>::type;
     };
 
-    template <class, class>
-    class	RemoveInTemplateType;
-
-    template <class ToRem, template<class...> class Holder, class ...Args>
-    struct	RemoveInTemplateType<ToRem, Holder<Args...>>
-    {
-        using type = typename RemoveTypeFromList<ToRem, Holder, Args...>::type;
-    };
+    template <class ToRem, class Holder>
+    using RemoveInTemplateType = typename RemoveTypeFromList<ToRem, Holder>::type;
 }

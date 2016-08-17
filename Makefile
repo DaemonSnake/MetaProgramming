@@ -5,7 +5,7 @@
 ## Login   <penava_b@epitech.net>
 ## 
 ## Started on  Sat Apr 30 17:40:10 2016 penava_b
-## Last update Fri Jun 17 17:37:45 2016 penava_b
+## Last update Sun Aug 14 16:24:04 2016 penava_b
 ##
 
 CXX		= g++
@@ -17,11 +17,12 @@ NAME =		meta
 SRC =		RemoveTypeVaArgsT.cpp \
                 RuntimeMap.cpp \
                 Sequence.cpp \
-		Split.cpp
+		Split.cpp \
+		MergeSort.cpp
 
 OBJ =		$(SRC:.cpp=.o)
 
-COMMON =       	-W -Wall -Wextra -Werror -I inc/
+COMMON =       	-W -Wall -Wextra -I inc/
 
 CXXFLAGS =     	$(COMMON) -I inc -std=c++14
 
