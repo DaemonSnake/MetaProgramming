@@ -21,24 +21,27 @@
  */
 #pragma once
 
-#include <stdio.h>
-#include <cxxabi.h>
-#include <iostream>
-#include <type_traits>
-
-class NoPrint {};
-
-template <class T = NoPrint>
-void print()
+template <unsigned... Indexs>
+struct Holder
 {
-    int status = -4;
-    const char *name = typeid(T).name();
+    template <unsigned I>
+    using push_back = Holder<Indexs..., I>;
 
-    printf("%s\n", abi::__cxa_demangle(name, 0, 0, &status));
-}
+    template <unsigned I>
+    using push_front = Holder<I, Indexs...>;
 
-template <>
-inline void print<NoPrint>()
+    template <template<unsigned...> class NewHolder>
+    using transfer = NewHolder<Indexs...>;
+
+    static constexpr std::size_t size = sizeof...(Indexs);
+    static constexpr unsigned array[size] = {Indexs...};
+};
+
+template <class T, class Holder>
+struct Transfer;
+
+template <template<unsigned...> class Template, class H, unsigned... Indexs>
+struct Transfer<Template<Indexs...>, H>
 {
-    printf("\n");
-}
+    using result = typename H::template transfer<Template>::result;
+};

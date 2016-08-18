@@ -67,9 +67,9 @@ struct Merger
 };
 
 template <class Left, class Right>
-struct Merger<Left, Right, 1>
+struct Merger<Left, Right, 0>
 {
-    using result = Holder<MinFront<Left, Right>::min>;
+    using result = Holder<>;
 };
 
 template <class Left, class Right>
@@ -79,10 +79,10 @@ template <unsigned... Indexs>
 struct MergeSort
 {
     using split_ret = split<Indexs...>;
-    using result = typename merger<
-        typename split<Indexs...>::left::template transfer<MergeSort>::result,
-        typename split<Indexs...>::right::template transfer<MergeSort>::result
-        >::result;
+    using result = merger<
+        typename Transfer<MergeSort, typename split_ret::left>::result,
+        typename Transfer<MergeSort, typename split_ret::right>::result
+        >;
 };
 
 template <unsigned Index>
@@ -96,3 +96,9 @@ struct MergeSort<>
 {
     using result = Holder<>;
 };
+
+template <unsigned...Indexs>
+using mergeSort = typename MergeSort<Indexs...>::result;
+
+template <class H>
+using mergeSortHolder = typename Transfer<MergeSort<>, H>::result;

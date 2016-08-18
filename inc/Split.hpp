@@ -19,10 +19,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 #pragma once
 
 #include <type_traits>
+#include "Holder.hpp"
 
 namespace detail
 {
@@ -62,24 +62,6 @@ namespace detail
                                             H<>, H<>, Indexs...>::type;
     };
 }
-
-template <unsigned... Indexs>
-struct Holder
-{
-    template <unsigned I>
-    using push_back = Holder<Indexs..., I>;
-
-    template <unsigned I>
-    using push_front = Holder<I, Indexs...>;
-
-    //pop_front
-
-    template <template<unsigned...> class NewHolder>
-    using transfer = NewHolder<Indexs...>;
-
-    static constexpr std::size_t size = sizeof...(Indexs);
-    static constexpr unsigned array[size] = {Indexs...};
-};
 
 template <unsigned... Indexs>
 using split = typename detail::SplitterClass<1, sizeof...(Indexs),

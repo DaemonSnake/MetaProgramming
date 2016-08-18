@@ -5,7 +5,10 @@ using namespace MPL;
 
 Unit(MergeSort)
 {
-    using res = MergeSort<5,1,4,2,8>;
+    using origin = Holder<5,1,4,2,8>;
+    using res = mergeSort<5,1,4,2,8>;
 
-    // print<res::result>();
+    print<origin>();
+    print<res>();
+    print<mergeSortHolder<origin>>();
 }
