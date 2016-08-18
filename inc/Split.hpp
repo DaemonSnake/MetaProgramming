@@ -30,10 +30,10 @@ namespace detail
               unsigned frontIndex, unsigned... Remains>
     class SplitterClass
     {
-        using _left = typename std::conditional<(i <= len / 2),
-            typename Left:: template push_back<frontIndex>, Left>::type;
-        using _right = typename std::conditional<(i > len / 2),
-            typename Right:: template push_back<frontIndex>, Right>::type;
+        using _left = std::conditional_t<(i <= len / 2),
+            typename Left:: template push_back<frontIndex>, Left>;
+        using _right = std::conditional_t<(i > len / 2),
+            typename Right:: template push_back<frontIndex>, Right>;
 
     public:
         using type = typename SplitterClass<i + 1, len, _left, _right, Remains...>::type;
@@ -46,10 +46,10 @@ namespace detail
     struct SplitterClass<i, len, Left, Right, frontIndex>
     {
         using type = SplitterClass<i, len, Left, Right, frontIndex>;
-        using left = typename std::conditional<(i <= len / 2),
-            typename Left:: template push_back<frontIndex>, Left>::type;
-        using right = typename std::conditional<(i > len / 2),
-            typename Right:: template push_back<frontIndex>, Right>::type;
+        using left = std::conditional_t<(i <= len / 2),
+            typename Left:: template push_back<frontIndex>, Left>;
+        using right = std::conditional_t<(i > len / 2),
+            typename Right:: template push_back<frontIndex>, Right>;
     };
 
     template <class T>

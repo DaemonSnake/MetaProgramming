@@ -44,10 +44,10 @@ namespace MPL
         template <Type Index, typename = void>
         class IndexSeqBuilder
         {
-            using isBad = typename std::conditional<
+            using isBad = std::conditional_t<
                 ((Pas > 0 && Pas + Index > End) || (Pas < 0 && Pas + Index < End)),
                 std::false_type,
-                void>::type;
+                void>;
         
         public:
             using type = typename AddToFront<Index, typename IndexSeqBuilder<Index + Pas, isBad>::type>::type;
@@ -68,7 +68,6 @@ namespace MPL
     public:
         using type = typename IndexSeqBuilder<Begin, void>::type;
     };
-
 
     template <class Type, Type Begin, Type End, int Pas = (Begin < End ? 1 : -1)>
     using makeSeq = typename MakeSeq<Type, Begin, End, Pas>::type;

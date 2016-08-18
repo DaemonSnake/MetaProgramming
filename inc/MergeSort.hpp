@@ -51,12 +51,12 @@ struct MinFront
         || right_sep::empty;
     static constexpr unsigned min = isLeft ? left_sep::front : right_sep::front;
     
-    using left = typename std::conditional<isLeft,
-                                           typename left_sep::tail,
-                                           Left>::type;
-    using right = typename std::conditional<isLeft,
-                                            Right,
-                                            typename right_sep::tail>::type;
+    using left = std::conditional_t<isLeft,
+                                    typename left_sep::tail,
+                                    Left>;
+    using right = std::conditional_t<isLeft,
+                                     Right,
+                                     typename right_sep::tail>;
 };
 
 template <class Left, class Right, std::size_t Size = Left::size + Right::size>

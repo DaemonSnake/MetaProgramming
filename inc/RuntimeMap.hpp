@@ -50,10 +50,10 @@ namespace MPL
 	    template <KeyType index, typename HashPair, typename ...Remainings>
 	    struct Split<index, HashPair, Remainings...>
 	    {
-		using type = typename std::conditional<index == HashPair::value,
+		using type = std::conditional_t<index == HashPair::value,
 		    typename HashPair::type,
 		    typename Split<index, Remainings...>::type
-		    >::type;
+		    >;
 		static constexpr bool isSet =
 		    (index == HashPair::value ?
 		     HashPair::isSet : Split<index, Remainings...>::isSet);
@@ -62,10 +62,10 @@ namespace MPL
 	    template <KeyType index, typename HashPair>
 	    struct Split<index, HashPair>
 	    {
-		using type = typename std::conditional<index == HashPair::value,
-						       typename HashPair::type,
-						       Default
-						       >::type;
+		using type = std::conditional_t<index == HashPair::value,
+                                              typename HashPair::type,
+                                              Default
+                                              >;
 		static constexpr bool isSet = (index == HashPair::value ?
 					       HashPair::isSet : false);
 	    };
