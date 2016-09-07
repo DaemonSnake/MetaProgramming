@@ -78,18 +78,18 @@ namespace MPL
         template <class>
         struct ExtractTool;
 
-        template <unsigned ...Indexs>
-        struct ExtractTool<IndexSeq<unsigned, Indexs...>>
+        template <std::size_t ...Indexs>
+        struct ExtractTool<IndexSeq<std::size_t, Indexs...>>
         {
             using type = IndexSeq<Type, IndexSeq::template get<Indexs>()...>;
         };
 
         template <int index>
-        static constexpr unsigned trueIndex()
+        static constexpr std::size_t trueIndex()
         {
             if (index < 0)
                 return size - ((-index) % size);
-            return (index >= (int)size ? size - 1 : (unsigned)index);
+            return (index >= (int)size ? size - 1 : (std::size_t)index);
         }
 
     public:
@@ -103,8 +103,8 @@ namespace MPL
             return tmp[trueIndex<index>()];
         }
 
-        template <unsigned From, int To = -1>
-            using Sub = typename ExtractTool<makeSeq<unsigned, From, trueIndex<To>()>>::type;
+        template <std::size_t From, int To = -1>
+            using Sub = typename ExtractTool<makeSeq<std::size_t, From, trueIndex<To>()>>::type;
     };
 
     template <class Type, Type B, Type E>
@@ -112,5 +112,4 @@ namespace MPL
     {
         using type = IndexSeq<Type>;
     };
-
 }

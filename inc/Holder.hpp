@@ -19,29 +19,60 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 #pragma once
 
-template <unsigned... Indexs>
-struct Holder
+#include <cstddef>
+#include <utility>
+#include <array>
+
+template <std::size_t... Indexs>
+class Holder
 {
-    template <unsigned I>
-    using push_back = Holder<Indexs..., I>;
-
-    template <unsigned I>
-    using push_front = Holder<I, Indexs...>;
-
-    template <template<unsigned...> class NewHolder>
-    using transfer = NewHolder<Indexs...>;
-
+public:
     static constexpr std::size_t size = sizeof...(Indexs);
-    static constexpr unsigned array[size] = {Indexs...};
-};
+    static constexpr std::size_t array[size] {Indexs...};
 
-template <class T, class Holder>
-struct Transfer;
+private:
+    template <std::size_t Offset, class>
+    struct spliter;
 
-template <template<unsigned...> class Template, class H, unsigned... Indexs>
-struct Transfer<Template<Indexs...>, H>
-{
-    using result = typename H::template transfer<Template>::result;
+    template <std::size_t Offset, std::size_t... Indexs2>
+    struct spliter<Offset, std::index_sequence<Indexs2...>> {
+        using result = Holder<std::get<Indexs2 + Offset>
+                              (std::array<std::size_t, size>({Indexs...}))...>;
+    };
+
+    template <bool, class> struct append_holder;
+
+    template <bool from, template<std::size_t...> class H, std::size_t... Indexs2>
+    struct append_holder<from, H<Indexs2...>> {
+        using result = std::conditional_t<from, Holder<Indexs..., Indexs2...>,
+                                          H<Indexs2..., Indexs...>>;
+    };
+
+    template <std::size_t number>
+    using seq = std::make_index_sequence<((size >= number && number >= 0) ? size - number : 0)>;
+
+public:
+    template <std::size_t... Indexs2>
+    using push_back = Holder<Indexs..., Indexs2...>;
+
+    template <std::size_t... Indexs2>
+    using push_front = Holder<Indexs2..., Indexs...>;
+
+    template <std::size_t number = 1>
+    using pop_back = typename spliter<0, seq<number>>::result;
+
+    template <std::size_t number = 1>
+    using pop_front = typename spliter<(size >= number ? number : 0), seq<number>>::result;
+
+    template <class H>
+    using insert_from = typename append_holder<true, H>::result;
+
+    template <class H>
+    using insert_into = typename append_holder<false, H>::result;
+
+    using left = pop_back<size / 2>;
+    using right = pop_front<(size / 2) + (size - (size / 2 * 2))>;
 };

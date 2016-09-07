@@ -21,22 +21,20 @@
  */
 #pragma once
 
-#include "Split.hpp"
-
 template <class T> class SeperateFirstAndTail;
 
-template <template<unsigned...> class H, unsigned Front, unsigned... Tail>
+template <template<std::size_t...> class H, std::size_t Front, std::size_t... Tail>
 struct SeperateFirstAndTail<H<Front, Tail...>>
 {
-    static constexpr unsigned front = Front;
+    static constexpr std::size_t front = Front;
     using tail = H<Tail...>;
     static constexpr bool empty = false;
 };
 
-template <template<unsigned...> class H>
+template <template<std::size_t...> class H>
 struct SeperateFirstAndTail<H<>>
 {
-    static constexpr unsigned front = 0;
+    static constexpr std::size_t front = 0;
     using tail = H<>;
     static constexpr bool empty = true;
 };
@@ -49,17 +47,13 @@ struct MinFront
 
     static constexpr bool isLeft = (left_sep::front <= right_sep::front && !left_sep::empty)
         || right_sep::empty;
-    static constexpr unsigned min = isLeft ? left_sep::front : right_sep::front;
+    static constexpr std::size_t min = isLeft ? left_sep::front : right_sep::front;
     
-    using left = std::conditional_t<isLeft,
-                                    typename left_sep::tail,
-                                    Left>;
-    using right = std::conditional_t<isLeft,
-                                     Right,
-                                     typename right_sep::tail>;
+    using left = std::conditional_t<isLeft, typename left_sep::tail, Left>;
+    using right = std::conditional_t<isLeft, Right, typename right_sep::tail>;
 };
 
-template <class Left, class Right, std::size_t Size = Left::size + Right::size>
+template <class Left, class Right, std::size_t Size = Left::size + Right::size - 1>
 struct Merger
 {
     using split = MinFront<Left, Right>;
@@ -75,17 +69,20 @@ struct Merger<Left, Right, 0>
 template <class Left, class Right>
 using merger = typename Merger<Left, Right, Left::size + Right::size>::result;
 
-template <unsigned... Indexs>
+template <std::size_t... Indexs>
 struct MergeSort
 {
-    using split_ret = split<Indexs...>;
     using result = merger<
-        typename Transfer<MergeSort, typename split_ret::left>::result,
-        typename Transfer<MergeSort, typename split_ret::right>::result
+        typename Holder<>::template insert_from<
+            typename Holder<Indexs...>::left::template insert_into<MergeSort<>
+                                                                   >::result>,
+        typename Holder<>::template insert_from<
+            typename Holder<Indexs...>::right::template insert_into<MergeSort<>
+                                                                    >::result>
         >;
 };
 
-template <unsigned Index>
+template <std::size_t Index>
 struct MergeSort<Index>
 {
     using result = Holder<Index>;
@@ -97,8 +94,11 @@ struct MergeSort<>
     using result = Holder<>;
 };
 
-template <unsigned...Indexs>
+template <std::size_t...Indexs>
 using mergeSort = typename MergeSort<Indexs...>::result;
 
 template <class H>
-using mergeSortHolder = typename Transfer<MergeSort<>, H>::result;
+using mergeSortHolder =
+    typename Holder<>::insert_into<
+    typename Holder<>::insert_from<H>::template insert_into<MergeSort<>>::result
+    >;
