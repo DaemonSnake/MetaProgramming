@@ -19,69 +19,130 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 #pragma once
 
+#include <cstddef>
 #include <type_traits>
 
 namespace MPL
 {
-    template <typename KeyType, typename Default>
+    template <class KeyType, class Default>
     struct RuntimeMap
     {
-	template <KeyType N, class Type, bool IsSet = true>
-	struct Pair
-	{
-	    using type = Type;
-	    constexpr static KeyType value = N;
-	    constexpr static bool isSet = IsSet;
-	};
+        template <KeyType N, class Type>
+        struct Pair
+        {
+            using type = Type;
+            static constexpr KeyType value = N;
+        };
 
-	template <typename ...Args>
-	struct NewMap
-	{
-	    template <KeyType, typename ...>
-	    struct Split
-	    {
-		using type = Default;
-		static constexpr bool isSet = false;
-	    };
-	    
-	    template <KeyType index, typename HashPair, typename ...Remainings>
-	    struct Split<index, HashPair, Remainings...>
-	    {
-		using type = std::conditional_t<index == HashPair::value,
-		    typename HashPair::type,
-		    typename Split<index, Remainings...>::type
-		    >;
-		static constexpr bool isSet =
-		    (index == HashPair::value ?
-		     HashPair::isSet : Split<index, Remainings...>::isSet);
-	    };
+    private:
 
-	    template <KeyType index, typename HashPair>
-	    struct Split<index, HashPair>
-	    {
-		using type = std::conditional_t<index == HashPair::value,
-                                              typename HashPair::type,
-                                              Default
-                                              >;
-		static constexpr bool isSet = (index == HashPair::value ?
-					       HashPair::isSet : false);
-	    };
-	    
-	public:
-	    template <KeyType index>
-	    using Get = typename Split<index, Args...>::type;
+        template <class...>
+        struct Map
+        {
+            template <KeyType>
+            static constexpr bool exists = false;
 
-	    template <KeyType index>
-	    static constexpr bool isSet = Split<index, Args...>::isSet;
+            template <KeyType Key, std::size_t Index = 0>
+            static constexpr std::size_t index = Index;
 
-	    template <KeyType index, typename Type>
-	    using Set = NewMap<Pair<index, Type>, Args...>;
+            template <KeyType Key, class previous = Map<> >
+            using unset = previous;
 
-	    template <KeyType index>
-	    using Unset = NewMap<Pair<index, Default, false>, Args...>;
-	};
+            template <KeyType Key, class With>
+            using set = Map<Pair<Key, With>>;
+
+            template <class Arg>
+            using push_back = Map<Arg>;
+
+            template <KeyType Key>
+            using get = Default;
+
+        private:
+
+            template <class ...>
+            friend class Map;
+
+            template <class ...>
+            friend class MapCreate;
+
+            template <KeyType Key, class previous = Map<> >
+            using replace = previous;
+        };
+
+        template <KeyType Key, class Value, class... Args>
+        class Map<Pair<Key, Value>, Args...>
+        {
+            using self = Map<Pair<Key, Value>, Args...>;
+
+            template <class ...>
+            friend class Map;
+
+            template <class ...>
+            friend class MapCreate;
+
+        public:
+            template <class Arg>
+            using push_back = Map<Pair<Key, Value>, Args..., Arg>;
+
+            template <KeyType key>
+            static constexpr bool exists =
+                (Key == key ? true : Map<Args...>::template exists<key>);
+
+            template <KeyType key, std::size_t Index = 0>
+            static constexpr std::size_t index =
+                (Key == key ? Index : Map<Args...>::template index<Index+1>);
+
+            template <KeyType key, class previous = Map<> >
+            using unset = std::conditional_t<
+                (Key == key),
+                typename Map<Args...>::template unset<key, previous>,
+                typename Map<Args...>::template unset<
+                    key, typename previous::template push_back<Pair<Key, Value>>
+                    >
+                >;
+
+            template <KeyType key>
+            using get = std::conditional_t<(Key == key), Value, typename Map<Args...>::template get<key>>;
+
+        private:
+            template <KeyType key, class with, class previous = Map<> >
+            using replace = std::conditional_t<
+            (Key == key),
+            typename Map<Args...>::template replace<
+                key,
+                typename previous::template push_back<Pair<Key, with>>>,
+
+            typename Map<Args...>::template replace<
+                key,
+                typename previous::template push_back<Pair<Key, Value>>>
+            >;
+
+        public:
+            template <KeyType key, class with>
+            using set = std::conditional_t<
+            exists<key>,
+            typename self::template replace<key, with>,
+            typename self::template push_back<Pair<key, with>>
+            >;
+        };
+
+        template <class Result, class ...Args>
+        struct MapCreate
+        {
+            using result = Result;
+        };
+
+        template <class Result, KeyType key, class with, class ...Args>
+        struct MapCreate<Result, Pair<key, with>, Args...>
+        {
+            using result = typename Result::template set<key, with>;
+        };
+
+    public:
+
+        template <class... Args>
+        using create = typename MapCreate<Map<>, Args...>::result;
     };
 }
