@@ -28,7 +28,7 @@
 #include "Holder.hpp"
 
 #include "Sequence.hpp"
-#include "RuntimeMap.hpp"
+#include "TypeMap.hpp"
 #include "RemoveTypeFromList.hpp"
 
 namespace MPL

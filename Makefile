@@ -5,7 +5,7 @@
 ## Login   <penava_b@epitech.net>
 ## 
 ## Started on  Sat Apr 30 17:40:10 2016 penava_b
-## Last update Wed Sep  7 15:29:42 2016 penava_b
+## Last update Wed Sep  7 15:35:22 2016 penava_b
 ##
 
 CXX		= g++
@@ -15,7 +15,7 @@ RM =		rm -f
 NAME =		meta
 
 SRC =		RemoveTypeVaArgsT.cpp \
-                RuntimeMap.cpp \
+                TypeMap.cpp \
                 Sequence.cpp \
 		Split.cpp \
 		MergeSort.cpp

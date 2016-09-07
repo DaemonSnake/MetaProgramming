@@ -27,7 +27,7 @@
 namespace MPL
 {
     template <class KeyType, class Default>
-    struct RuntimeMap
+    struct TypeMap
     {
         template <KeyType N, class Type>
         struct Pair
