@@ -21,20 +21,54 @@
  */
 #pragma once
 
-#include <stdio.h>
 #include <cxxabi.h>
 #include <iostream>
 #include <type_traits>
+#include <string>
+#include <regex>
 
 class NoPrint {};
+
+inline std::string find_class_name(std::string const &name)
+{
+    std::size_t b = name.size();
+    std::size_t open = 0;
+
+    for (std::size_t i = 0; i < name.size(); i++)
+        if (name[i] == '>')
+            --open;
+        else if (name[i] == '<')
+            if (open++ == 0)
+                b = i;
+    return name.substr(0, b);
+}
 
 template <class T = NoPrint>
 void print()
 {
     int status = -4;
     const char *name = typeid(T).name();
-
-    printf("%s\n", abi::__cxa_demangle(name, 0, 0, &status));
+    std::string true_name = abi::__cxa_demangle(name, 0, 0, &status);
+    std::string class_name = find_class_name(true_name);
+    std::string namespe = [&]() -> std::string {
+        std::size_t i = class_name.rfind("::");
+        if (i != std::string::npos)
+            return class_name.substr(0, i);
+        else
+            return "";
+    }();
+   if (!namespe.empty()) {
+        std::string::size_type n = 0;
+        while ( ( n = true_name.find( namespe, n ) ) != std::string::npos )
+        {
+            true_name.replace( n, namespe.size(), "" );
+            n += 0;
+        }
+    }
+    std::cout <<  true_name;
+    if (!namespe.empty())
+        std::cout << " (:: ==> " + namespe + ")";
+    std::cout << std::endl;
 }
 
 template <>
